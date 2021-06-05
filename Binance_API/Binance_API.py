@@ -1,12 +1,11 @@
-# import api_config
-from Binance_API import api_config
+import config
 from binance.client import Client
 from datetime import datetime
 
 
 class Binance_API():
     def __init__(self):
-        self.client = Client(api_config.API_KEY, api_config.API_SECRET)
+        self.client = Client(config.API_KEY, config.API_SECRET)
         self.coins = ['ATOM', 'BTC', 'BNB', 'DOGE', 'ETH', 'LINK', 'MATIC', 'USDT', 'XRP']
         self.coins_pairs = ['USDTRUB', 'ETHUSDT', 'MATICUSDT', 'BTCUSDT', 'DOGEUSDT', 'ETHBUSD', 'DOGERUB', 'ATOMBTC']
 

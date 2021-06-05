@@ -1,12 +1,12 @@
 import mysql.connector
-
+import config
 
 class MySQL():
     def __init__(self):
-        self.cnx = mysql.connector.connect(user='sibdar',
-                                           password='From1to200',
-                                           host='192.168.31.6',
-                                           database='binance')
+        self.cnx = mysql.connector.connect(user=config.user,
+                                           password=config.password,
+                                           host=config.host,
+                                           database=config.database)
         self.cursor = self.cnx.cursor()
 
     def execute_sql(self, req):

@@ -1,7 +1,6 @@
 from Binance_API.Binance_API import Binance_API
 from MySQL.MySQL import MySQL
 
-
 bapi = Binance_API()
 db = MySQL()
 

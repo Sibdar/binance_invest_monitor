@@ -1,8 +1,10 @@
 from Binance_API.Binance_API import Binance_API
 from MySQL.MySQL import MySQL
+from Telegram.TelegramHandler import TelegramHandler
 
 bapi = Binance_API()
 db = MySQL()
+tg = TelegramHandler()
 
 # 1
 # get curr crypto prices from binance API
@@ -33,5 +35,14 @@ db.insrt_into_orders(values)
 # 3
 db.update_prj_detail_tab()
 
-#4
+# 4
 db.update_prj()
+
+# 5 send prj_data to tg
+prj_name, mon_acc, comp_at, t_pas = db.get_prj_data('Driving Licence')
+msg = f"\U0001F4CA*Daily Report:*\n\n" \
+      f"\U0001F4BC_Project_: {prj_name}\n" \
+      f"\U0001F4B0Profit: {mon_acc}\n" \
+      f"\U00002705Completed at: {comp_at}\n" \
+      f"\U000023F3Time passed: {t_pas}"
+tg.send_msg(msg)

@@ -7,7 +7,7 @@ class MySQL():
                                            password=config.password,
                                            host=config.host,
                                            database=config.database)
-        self.cursor = self.cnx.cursor()
+        self.cursor = self.cnx.cursor(buffered=True)
 
     def execute_sql(self, req):
         self.cursor.execute(req)
@@ -39,9 +39,9 @@ class MySQL():
 
     def sel_last_usdtrub(self):
         sel_last_USDTRUB = """
-                              SELECT quantity, symbol, order_date, time FROM orders 
+                              SELECT quantity, symbol, order_date, order_time FROM orders 
                               WHERE symbol='USDTRUB' 
-                              ORDER BY order.date DESC
+                              ORDER BY order_date DESC
                               LIMIT 1
                            """
         self.cursor.execute(sel_last_USDTRUB)
@@ -104,17 +104,22 @@ class MySQL():
             cursor.execute(stat + ';')
         self.cnx.commit()
 
+    def get_prj_data(self, prj_name):
+        sel_stat = f"""
+                       select `project_name`, `money_accum`, `completed_at (%)`, `time_passed (%)`
+                       from projects
+                       where project_name='{prj_name}'
+                    """
+        self.execute_sql(sel_stat)
+        return self.cursor.fetchone()
+
 
 def main():
     db = MySQL()
-    cursor = db.cnx.cursor(buffered=True)
-    cursor.execute("""select @prj_id:= project_id, @prj_curr:= currency, 
-                             @from_date:= create_date, @from_time:= create_time, 
-                             @to_date:= end_date, @to_time:= end_time
-                      from projects 
-                      order by create_date desc, create_time desc 
-                      limit 1;""")
-    print(cursor.fetchone())
+    print(db.get_prj_data('Driving Licence'))
+    # print(db.sel_last_usdtrub())
+
+
 
 
 if __name__ == '__main__':

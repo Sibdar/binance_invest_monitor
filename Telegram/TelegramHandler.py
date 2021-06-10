@@ -21,7 +21,8 @@ class TelegramHandler():
         return req_api.content
 
     def send_msg(self, obj):
-        req_api = f"https://api.telegram.org/bot{self.token}/sendMessage?chat_id={self.chat_id}&text={obj}"
+        req_api = f"https://api.telegram.org/bot{self.token}/sendMessage?chat_id={self.chat_id}&text={obj}&" \
+                  f"parse_mode=Markdown"
         return requests.get(req_api)
 
 

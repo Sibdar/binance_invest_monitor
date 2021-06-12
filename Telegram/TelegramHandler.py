@@ -1,6 +1,6 @@
-import json
 import requests
 import config
+import telebot
 
 
 class TelegramHandler():
@@ -8,6 +8,8 @@ class TelegramHandler():
     def __init__(self):
         # CryptInvest_Bbot token
         self.token = config.tg_token
+        # init telebot
+        self.tb = telebot.TeleBot(self.token)
         # get cryptoinvest_monitor chat_id using `get_updates`
         self.chat_id = config.chat_id
 
@@ -24,6 +26,9 @@ class TelegramHandler():
         req_api = f"https://api.telegram.org/bot{self.token}/sendMessage?chat_id={self.chat_id}&text={obj}&" \
                   f"parse_mode=Markdown"
         return requests.get(req_api)
+
+    def send_msg_tb(self, msg):
+        self.tb.send_message(self.chat_id, msg, parse_mode='MarkdownV2')
 
 
 def main():

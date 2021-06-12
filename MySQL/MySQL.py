@@ -59,23 +59,23 @@ class MySQL():
         cursor = self.cnx.cursor(buffered=True)
         sel_proj_data = """
                               select @prj_id:= project_id, @prj_curr:= currency, 
-                                     @from_date:= create_date, @from_time:= create_time, 
-                                     @to_date:= end_date, @to_time:= end_time from projects 
-                              order by create_date desc, create_time desc 
-                              limit 1; 
+                                     @crDt:= concat(create_date,' ', create_time),
+                                     @endDt:= concat(end_date, ' ', end_time)
+                                     from projects; 
                         """
         cursor.execute(sel_proj_data)
         insrt_prj_det = """    
-                            insert into project_details (order_id, project_id, symbol, qty, profit, 
+                            insert into project_details (order_id, project_id, symbol, qty, invested, profit, 
                                                          curr, order_date, order_time, updated)                                      
                             select orders.orderId, @prj_id, orders.symbol, orders.quantity,
-                                   curr_prices.price*orders.quantity-orders.invested,
+                                   orders.invested, curr_prices.price*orders.quantity-orders.invested,
                                    @prj_curr,
                                    orders.order_date, orders.order_time, NOW()
-                            from orders inner join curr_prices on orders.symbol=curr_prices.symbol
-                            where (orders.order_date between @from_date and @to_date) 
-                                  and orders.order_time <> @from_time
-                            order by orders.order_date desc, orders.order_time desc
+                            from `orders`
+                            inner join `curr_prices` on orders.symbol=curr_prices.symbol
+                            where concat(order_date, ' ', order_time) > @crDt
+                                  and
+                                  concat(order_date, ' ', order_time) < @endDt
                             ON DUPLICATE KEY UPDATE profit=curr_prices.price*orders.quantity-orders.invested,
                                                     updated=NOW();                   
                         """
@@ -92,13 +92,21 @@ class MySQL():
                              @period_all:= timestampdiff(minute, @cr_ts, @end_ts)
                       from projects;
                       -- calculate total profit from crypto
-                      select @prj_sum:= sum(profit) from project_details;
+                      select @prj_sum:= sum(profit),
+                             @inv_sum:= sum(invested)
+                      from project_details;
                       -- update fields in projects
                       update projects
                       set money_accum = @prj_sum,
                           `completed_at (%)` = (@prj_sum / projects.budjet) * 100,
                           `time_passed (%)` = @period_passed / @period_all * 100,
-                          updated = now()
+                          `updated` = now(),
+                          `invested` = @inv_sum,
+                          `invest_status` = CASE
+                                                WHEN (@inv_sum + 10) > projects.budjet
+                                                THEN 'FINISHED'
+                                                ELSE 'IN PROGRESS'
+                                                END
                     """
         for stat in upd_stat.split(';'):
             cursor.execute(stat + ';')
@@ -106,7 +114,12 @@ class MySQL():
 
     def get_prj_data(self, prj_name):
         sel_stat = f"""
-                       select `project_name`, `money_accum`, `completed_at (%)`, `time_passed (%)`
+                       select `project_name`,
+                              `goal`,
+                              `invested`,
+                              `money_accum`,
+                              `completed_at (%)`,
+                              `time_passed (%)`
                        from projects
                        where project_name='{prj_name}'
                     """
@@ -118,8 +131,6 @@ def main():
     db = MySQL()
     print(db.get_prj_data('Driving Licence'))
     # print(db.sel_last_usdtrub())
-
-
 
 
 if __name__ == '__main__':

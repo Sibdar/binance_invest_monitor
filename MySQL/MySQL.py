@@ -57,14 +57,17 @@ class MySQL():
 
     def update_prj_detail_tab(self):
         cursor = self.cnx.cursor(buffered=True)
-        sel_proj_data = """
+        script = """
                               select @prj_id:= project_id, @prj_curr:= currency, 
-                                     @crDt:= concat(create_date,' ', create_time),
-                                     @endDt:= concat(end_date, ' ', end_time)
-                                     from projects; 
-                        """
-        cursor.execute(sel_proj_data)
-        insrt_prj_det = """    
+                                     @crDt:= concat(create_date,' ', create_time)
+                              from projects;
+                              
+                              select @endDt:= concat(order_date, ' ', order_time)
+                              from orders
+                              where symbol = 'USDTRUB'
+                              order by concat(order_date, ' ', order_time) desc
+                              limit 1;
+  
                             insert into project_details (order_id, project_id, symbol, qty, invested, profit, 
                                                          curr, order_date, order_time, updated, timestamp)                                      
                             select orders.orderId, @prj_id, orders.symbol, orders.quantity,
@@ -77,9 +80,10 @@ class MySQL():
                                   and
                                   concat(order_date, ' ', order_time) < @endDt
                             ON DUPLICATE KEY UPDATE profit=curr_prices.price*orders.quantity-orders.invested,
-                                                    updated=NOW();                   
+                                                    updated=NOW()             
                         """
-        cursor.execute(insrt_prj_det)
+        for stat in script.split(';'):
+            cursor.execute(stat + ';')
         self.cnx.commit()
 
     def update_prj(self):

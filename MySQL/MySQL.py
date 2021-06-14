@@ -66,11 +66,11 @@ class MySQL():
         cursor.execute(sel_proj_data)
         insrt_prj_det = """    
                             insert into project_details (order_id, project_id, symbol, qty, invested, profit, 
-                                                         curr, order_date, order_time, updated)                                      
+                                                         curr, order_date, order_time, updated, timestamp)                                      
                             select orders.orderId, @prj_id, orders.symbol, orders.quantity,
                                    orders.invested, curr_prices.price*orders.quantity-orders.invested,
                                    @prj_curr,
-                                   orders.order_date, orders.order_time, NOW()
+                                   orders.order_date, orders.order_time, NOW(), concat(order_date, ' ', order_time)
                             from `orders`
                             inner join `curr_prices` on orders.symbol=curr_prices.symbol
                             where concat(order_date, ' ', order_time) > @crDt

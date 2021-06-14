@@ -49,7 +49,7 @@ class MySQL():
 
     def add_new_proj(self, vals):
         new_proj_req = f"""
-                           INSERT INTO projects (project_name, budjet, goal, currency, create_date, create_time,
+                           INSERT INTO projects (project_name, budget, goal, currency, create_date, create_time,
                                                  end_date)
                            VALUES {vals} 
                         """
@@ -98,12 +98,12 @@ class MySQL():
                       -- update fields in projects
                       update projects
                       set money_accum = @prj_sum,
-                          `completed_at (%)` = (@prj_sum / projects.budjet) * 100,
+                          `completed_at (%)` = (@prj_sum / projects.budget) * 100,
                           `time_passed (%)` = @period_passed / @period_all * 100,
                           `updated` = now(),
                           `invested` = @inv_sum,
                           `invest_status` = CASE
-                                                WHEN (@inv_sum + 10) > projects.budjet
+                                                WHEN (@inv_sum + 10) > projects.budget
                                                 THEN 'FINISHED'
                                                 ELSE 'IN PROGRESS'
                                                 END

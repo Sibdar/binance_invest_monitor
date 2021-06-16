@@ -28,7 +28,7 @@ orders = bapi.construct_all_orders()
 # orderId, symbol, price, quantity, invested, status, side, time, date
 values = ', '.join([f"({ordr['orderId']}, '{ordr['symbol']}', {ordr['price']}, {ordr['quantity']}, "
                     f"{round(ordr['invested'], 2)}, '{ordr['status']}', '{ordr['side']}', '{ordr['time'][0]}',"
-                    f"'{ordr['time'][1]}')"
+                    f"'{ordr['time'][1]}', concat('{ordr['time'][0]}', ' ', '{ordr['time'][1]}'))"
                         for ordr in orders])
 # insert into curr_prices tab
 db.insrt_into_orders(values)
@@ -45,8 +45,8 @@ spc = 29 * '-'
 msg = f"\U0001F4CA *Daily Report:*\n" \
       f"*{spc}*\n" \
       f"\U0001F4BC  *Project:* _{prj_name}_\n" \
-      f"\U0001F3AF  *Goal:* _{goal}_$\n" \
       f"\U0001F331  *Invested:* _{invested}$_\n" \
+      f"\U0001F3AF  *Goal:* _{goal}_$\n" \
       f"\U0001F4B8  *Profit:* _{mon_acc}$_\n" \
       f"\U0001F3C1	 *Completed at:* _{comp_at}%_\n" \
       f"\U000023F3  *Time passed:* _{t_pas}%_"

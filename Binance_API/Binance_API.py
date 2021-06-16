@@ -63,7 +63,7 @@ class Binance_API():
 
 def main():
     bapi = Binance_API()
-    print(bapi.get_all_orders('USDTRUB'))
+    print(bapi.construct_all_orders())
 
 
 if __name__ == '__main__':

@@ -23,8 +23,9 @@ class MySQL():
     def insrt_into_orders(self, vals):
         insert_into_orders = f"""
                                 INSERT INTO `orders` (orderId, symbol, price, quantity, invested, 
-                                                      status, side, order_date, order_time) VALUES {vals}
-                                ON DUPLICATE KEY UPDATE orderId=orderId                      
+                                                      status, side, order_date, order_time, timestamp) 
+                                VALUES {vals} 
+                                ON DUPLICATE KEY UPDATE orderId=orderId                 
                               """
         self.execute_sql(insert_into_orders)
 
@@ -54,18 +55,21 @@ class MySQL():
                            VALUES {vals} 
                         """
         self.execute_sql(new_proj_req)
-
+    #                               order by concat(order_date, ' ', order_time) desc
+    #                               limit 1;
     def update_prj_detail_tab(self):
         cursor = self.cnx.cursor(buffered=True)
         script = """
                               select @prj_id:= project_id, @prj_curr:= currency, 
-                                     @crDt:= concat(create_date,' ', create_time)
+                                     @crDt:= concat(create_date, ' ', create_time)
                               from projects;
                               
-                              select @endDt:= concat(order_date, ' ', order_time)
+                              select @endDt:= timestamp
                               from orders
                               where symbol = 'USDTRUB'
-                              order by concat(order_date, ' ', order_time) desc
+                                    and
+                                    orders.timestamp > @crDt
+                              order by timestamp
                               limit 1;
   
                             insert into project_details (order_id, project_id, symbol, qty, invested, profit, 
@@ -102,7 +106,7 @@ class MySQL():
                       -- update fields in projects
                       update projects
                       set money_accum = @prj_sum,
-                          `completed_at (%)` = (@prj_sum / projects.budget) * 100,
+                          `completed_at (%)` = (@prj_sum / projects.goal) * 100,
                           `time_passed (%)` = @period_passed / @period_all * 100,
                           `updated` = now(),
                           `invested` = @inv_sum,

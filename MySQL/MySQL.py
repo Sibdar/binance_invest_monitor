@@ -106,7 +106,7 @@ class MySQL():
                       -- update fields in projects
                       update projects
                       set money_accum = @prj_sum,
-                          `completed_at (%)` = (@prj_sum / projects.goal) * 100,
+                          `completed_at (%)` = round((@prj_sum / projects.goal) * 100, 3),
                           `time_passed (%)` = @period_passed / @period_all * 100,
                           `updated` = now(),
                           `invested` = @inv_sum,
